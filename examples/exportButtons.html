@@ -99,8 +99,8 @@ var exportData = instance.getExportData()['export-buttons-table']['xls'];
 var XLSbutton = document.getElementById('customXLSButton');
 
 XLSbutton.addEventListener('click', function (e) {
-    //                   // data          // mime              // name              // extension
-    instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.fileExtension);
+    //                   // data          // mime              // name              // sheetname          // extension
+    instance.export2file(exportData.data, exportData.mimeType, exportData.filename, exportData.sheetname, exportData.fileExtension);
 });
 </pre>
     </div>
@@ -158,14 +158,14 @@ var byteLength = bytes.byteLength;
 
     var XLSbutton = document.getElementById('customXLSButton');
     XLSbutton.addEventListener('click', function (e) {
-        //                   // data             // mime                 // name                 // extension
-        instance.export2file(exportDataXLS.data, exportDataXLS.mimeType, exportDataXLS.filename, exportDataXLS.fileExtension);
+        //                   // data             // mime                 // name                 // sheetname   // extension
+        instance.export2file(exportDataXLS.data, exportDataXLS.mimeType, exportDataXLS.filename, null,          exportDataXLS.fileExtension);
     });
 
     var CSVbutton = document.getElementById('customCSVButton');
     CSVbutton.addEventListener('click', function (e) {
-        //                   // data             // mime                 // name                 // extension
-        instance.export2file(exportDataCSV.data, exportDataCSV.mimeType, exportDataCSV.filename, exportDataCSV.fileExtension);
+        //                   // data             // mime                 // name                 // sheetname // extension
+        instance.export2file(exportDataCSV.data, exportDataCSV.mimeType, exportDataCSV.filename, null,        exportDataCSV.fileExtension);
     });
 
 </script>

@@ -87,6 +87,9 @@
                 context.filename = settings.filename === 'id'
                     ? (el.getAttribute('id') ? el.getAttribute('id') : self.defaultFilename)
                     : (settings.filename ? settings.filename : self.defaultFilename);
+                context.sheetname = settings.sheetname === 'id'
+                    ? (el.getAttribute('id') ? el.getAttribute('id') : self.defaultSheetname)
+                    : (settings.sheetname ? settings.sheetname : self.defaultSheetname);
                 context.uuid = _uuid(el);
 
                 /**
@@ -158,6 +161,7 @@
                 footers: true,                              // (Boolean), display table footers (th or td elements) in the <tfoot>, (default: false)
                 formats: ['xlsx', 'csv', 'txt'],            // (String[]), filetype(s) for the export, (default: ['xlsx', 'csv', 'txt'])
                 filename: 'id',                             // (id, String), filename for the downloaded file, (default: 'id')
+                sheetname: 'id',                            // (id, String), sheetname, (default: 'id')
                 bootstrap: false,                           // (Boolean), style buttons using bootstrap, (default: true)
                 exportButtons: true,                        // (Boolean), automatically generate the built-in export buttons for each of the specified formats (default: true)
                 position: 'bottom',                         // (top, bottom), position of the caption element relative to table, (default: 'bottom')
@@ -196,6 +200,11 @@
              * @memberof TableExport.prototype
              */
             defaultFilename: 'myDownload',
+            /**
+             * Sheetname fallback for exported sheet.
+             * @memberof TableExport.prototype
+             */
+            defaultSheetname: 'mySheet',
             /**
              * Class applied to each export button element.
              * @memberof TableExport.prototype
@@ -384,6 +393,7 @@
                     var dataObject = JSON.stringify({
                         data: dataURI,
                         filename: context.filename,
+                        sheetname: context.sheetname,
                         mimeType: format.mimeType,
                         fileExtension: format.fileExtension,
                         merges: rcMap.merges
@@ -531,10 +541,11 @@
                 var object = JSON.parse(Storage.getInstance().getItem(target.getAttribute(this.storageKey))),
                     data = object.data,
                     filename = object.filename,
+                    sheetname = object.sheetname,
                     mimeType = object.mimeType,
                     fileExtension = object.fileExtension,
                     merges = object.merges;
-                this.export2file(data, mimeType, filename, fileExtension, merges);
+                this.export2file(data, mimeType, filename, sheetname, fileExtension, merges);
             },
             /**
              * Excel Workbook constructor
@@ -562,29 +573,30 @@
              * @memberof TableExport.prototype
              * @param data {String}
              * @param mime {String} mime type
-             * @param name {String} filename
+             * @param filename {String} filename
+             * @param sheetname {String} sheetname (XLS* only)
              * @param extension {String} file extension
              * @param merges {Object[]}
              */
-            export2file: function (data, mime, name, extension, merges) {
-                data = this.getRawData(data, extension, name, merges);
+            export2file: function (data, mime, filename, sheetname, extension, merges) {
+                data = this.getRawData(data, extension, sheetname, merges);
 
                 if (_isMobile) {
                     // TODO: fix dataURI on iphone (xlsx & xls)
                     var dataURI = 'data:' + mime + ';' + this.charset + ',' + data;
-                    this.downloadDataURI(dataURI, name, extension);
+                    this.downloadDataURI(dataURI, filename, extension);
                 } else {
                     // TODO: error and fallback when `saveAs` not available
                     saveAs(new Blob([data],
                         {type: mime + ';' + this.charset}),
-                        name + extension, true);
+                        filename + extension, true);
                 }
             },
-            downloadDataURI: function (dataURI, name, extension) {
+            downloadDataURI: function (dataURI, filename, extension) {
                 var encodedUri = encodeURI(dataURI);
                 var link = document.createElement('a');
                 link.setAttribute('href', encodedUri);
-                link.setAttribute('download', name + extension);
+                link.setAttribute('download', filename + extension);
                 document.body.appendChild(link);
                 link.click();
             },
@@ -596,7 +608,7 @@
                         return key;
                 }
             },
-            getRawData: function (data, extension, name, merges) {
+            getRawData: function (data, extension, sheetname, merges) {
                 var key = extension.substring(1);
 
                 if (_isEnhanced(key)) {
@@ -604,9 +616,9 @@
                         ws = this.createSheet(data, merges),
                         bookType = this.getBookType(key);
 
-                    name = name || '';
-                    wb.SheetNames.push(name);
-                    wb.Sheets[name] = ws;
+                        sheetname = sheetname || '';
+                    wb.SheetNames.push(sheetname);
+                    wb.Sheets[sheetname] = ws;
                     var wopts = {
                             bookType: bookType,
                             bookSST: false,
